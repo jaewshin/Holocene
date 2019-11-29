@@ -1,0 +1,68 @@
+\begin{tabular}{llllll}
+\toprule
+{} &                         NGA &  Start &   Stop &    Value &   Nature \\
+\midrule
+0  &           Big Island Hawaii &   1000 &   1700 &       NA &  Ignored \\
+1  &           Big Island Hawaii &   1800 &   1800 &  Present &  Ignored \\
+2  &                     Cahokia &   -600 &   1700 &       NA &  Ignored \\
+3  &             Cambodian Basin &    300 &   1800 &  Present &  Ignored \\
+4  &                Central Java &    800 &   1700 &  Present &  Ignored \\
+5  &               Chuuk Islands &   1800 &   1900 &  Present &  Ignored \\
+6  &                       Cuzco &    100 &   1300 &       NA &  Ignored \\
+7  &                       Cuzco &   1400 &   1500 &   Absent &  Ignored \\
+8  &                      Deccan &  -2700 &   -400 &       NA &     Used \\
+9  &                      Deccan &   -300 &   -300 &  Present &     Used \\
+10 &                      Deccan &   -200 &   -200 &       NA &     Used \\
+11 &                      Deccan &   -100 &   1700 &  Present &     Used \\
+12 &                Finger Lakes &   1600 &   1700 &       NA &  Ignored \\
+13 &                  Garo Hills &   1800 &   1800 &   Absent &  Ignored \\
+14 &              Ghanaian Coast &   1600 &   1800 &  Present &  Ignored \\
+15 &                     Iceland &   1000 &   1300 &  Present &  Ignored \\
+16 &                 Kachi Plain &  -7500 &   -600 &       NA &     Used \\
+17 &                 Kachi Plain &   -500 &   1800 &  Present &     Used \\
+18 &                      Kansai &   -300 &    500 &       NA &     Used \\
+19 &                      Kansai &    600 &   1800 &  Present &     Used \\
+20 &               Kapuasi Basin &   1700 &   1900 &  Present &  Ignored \\
+21 &                 Konya Plain &  -9600 &  -1700 &       NA &     Used \\
+22 &                 Konya Plain &  -1600 &   -900 &  Present &     Used \\
+23 &                 Konya Plain &   -800 &   -600 &       NA &     Used \\
+24 &                 Konya Plain &   -500 &   1800 &  Present &     Used \\
+25 &                      Latium &  -3600 &   -600 &       NA &     Used \\
+26 &                      Latium &   -500 &   1800 &  Present &     Used \\
+27 &           Lena River Valley &   1400 &   1600 &   Absent &  Ignored \\
+28 &               Lowland Andes &   1600 &   1900 &   Absent &  Ignored \\
+29 &  Middle Yellow River Valley &  -5000 &  -1300 &       NA &     Used \\
+30 &  Middle Yellow River Valley &  -1200 &  -1200 &   Absent &     Used \\
+31 &  Middle Yellow River Valley &  -1100 &    200 &  Present &     Used \\
+32 &  Middle Yellow River Valley &    300 &    300 &       NA &     Used \\
+33 &  Middle Yellow River Valley &    400 &   1900 &  Present &     Used \\
+34 &          Niger Inland Delta &   -200 &   1000 &       NA &     Used \\
+35 &          Niger Inland Delta &   1100 &   1200 &  Present &     Used \\
+36 &          Niger Inland Delta &   1300 &   1300 &       NA &     Used \\
+37 &          Niger Inland Delta &   1400 &   1800 &  Present &     Used \\
+38 &              North Colombia &    300 &   1000 &       NA &  Ignored \\
+39 &              North Colombia &   1100 &   1500 &   Absent &  Ignored \\
+40 &               Orkhon Valley &  -1400 &    400 &       NA &     Used \\
+41 &               Orkhon Valley &    500 &    900 &  Present &     Used \\
+42 &               Orkhon Valley &   1000 &   1500 &       NA &     Used \\
+43 &               Orkhon Valley &   1600 &   1900 &  Present &     Used \\
+44 &                     Oro PNG &   1800 &   1800 &   Absent &  Ignored \\
+45 &                 Paris Basin &  -3200 &   -200 &       NA &     Used \\
+46 &                 Paris Basin &   -100 &   1700 &  Present &     Used \\
+47 &                    Sogdiana &  -3500 &   -600 &       NA &     Used \\
+48 &                    Sogdiana &   -500 &   1200 &  Present &     Used \\
+49 &                    Sogdiana &   1300 &   1300 &       NA &     Used \\
+50 &                    Sogdiana &   1400 &   1700 &  Present &     Used \\
+51 &        Southern China Hills &   1800 &   1800 &       NA &  Ignored \\
+52 &                     Susiana &  -7800 &  -2300 &       NA &     Used \\
+53 &                     Susiana &  -2200 &  -2200 &  Present &     Used \\
+54 &                     Susiana &  -2100 &   -600 &       NA &     Used \\
+55 &                     Susiana &   -500 &      0 &  Present &     Used \\
+56 &                     Susiana &    100 &    200 &       NA &     Used \\
+57 &                     Susiana &    300 &   1700 &  Present &     Used \\
+58 &                 Upper Egypt &  -4400 &  -3000 &       NA &     Used \\
+59 &                 Upper Egypt &  -2900 &   1700 &  Present &     Used \\
+60 &            Valley of Oaxaca &  -1400 &   1500 &       NA &  Ignored \\
+61 &        Yemeni Coastal Plain &    400 &   1800 &  Present &  Ignored \\
+\bottomrule
+\end{tabular}
