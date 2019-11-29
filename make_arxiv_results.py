@@ -33,370 +33,369 @@ print('Calling generate_core_data')
 worldRegions,NGAs,PC_matrix,CC_df, CC_times, CC_scaled, PC1_df,regionDict,t_min,t_max,pc1_min,pc1_max,flowInfo, movArrayOut,velArrayOut,movArrayIn,velArrayIn,flowInfoInterp,movArrayOutInterp,r0,minPoints,dGrid,u0Vect,v0Vect,velScaling = generate_core_data()
 
 # # create a directory to store all the generated plots
-# createFolder('figures')
+createFolder('figures')
 
-# ####################################################
-# # PCA on data drawn from sinuid function (Figure 1)
-# ####################################################
+####################################################
+# PCA on data drawn from sinuid function (Figure 1)
+####################################################
 
-# def x(t):
-# 	return t
+def x(t):
+	return t
 
-# def y(t):
-# 	return np.sin(2*t)
+def y(t):
+	return np.sin(2*t)
 
-# def draw_vector(v0, v1, ax=None, color='r', label=''):
-# 	ax = ax or plt.gca()
-# 	arrowprops=dict(arrowstyle='->',
-# 		linewidth=2,
-# 		shrinkA=0, shrinkB=0, color=color)
-# 	ax.annotate('', v1, v0, arrowprops=arrowprops, label=label)
+def draw_vector(v0, v1, ax=None, color='r', label=''):
+	ax = ax or plt.gca()
+	arrowprops=dict(arrowstyle='->',
+		linewidth=2,
+		shrinkA=0, shrinkB=0, color=color)
+	ax.annotate('', v1, v0, arrowprops=arrowprops, label=label)
 
-# t_range = np.linspace(-7, 7, 100)
-# xval = x(t_range)
-# yval = y(t_range)
+t_range = np.linspace(-7, 7, 100)
+xval = x(t_range)
+yval = y(t_range)
 
-# xval = xval.reshape((-1, 1))
-# yval = yval.reshape((-1, 1))
-# data = np.hstack((xval, yval))
+xval = xval.reshape((-1, 1))
+yval = yval.reshape((-1, 1))
+data = np.hstack((xval, yval))
 
-# pca = PCA(n_components=2, svd_solver='full')
-# pca.fit(data)
+pca = PCA(n_components=2, svd_solver='full')
+pca.fit(data)
 
-# fig, ax = plt.subplots()
-# plt.scatter(xval, yval)
-# plt.plot(xval, yval, linewidth=1)
+fig, ax = plt.subplots()
+plt.scatter(xval, yval)
+plt.plot(xval, yval, linewidth=1)
 
-# i=0
+i=0
 
-# for length, vector in zip(pca.explained_variance_, pca.components_):
-# 	v = vector * 1 * np.sqrt(length)
+for length, vector in zip(pca.explained_variance_, pca.components_):
+	v = vector * 1 * np.sqrt(length)
 
-# 	if i==0:
-# 		color = 'r'
-# 		label = 'PC1'
-# 		draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
-# 		draw_vector(pca.mean_, pca.mean_ - v, color=color)
+	if i==0:
+		color = 'r'
+		label = 'PC1'
+		draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
+		draw_vector(pca.mean_, pca.mean_ - v, color=color)
 
-# 	else:
-# 		color = 'g'
-# 		label = 'PC2'
-# 		a2 = draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
-# 		draw_vector(pca.mean_, pca.mean_ - v, color=color)
+	else:
+		color = 'g'
+		label = 'PC2'
+		a2 = draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
+		draw_vector(pca.mean_, pca.mean_ - v, color=color)
 
-# 	i+=1
+	i+=1
 
-# red_patch = mpatches.Patch(color='r', label='First Principal Component')
-# blue_patch = mpatches.Patch(color='g', label='Second Principal Component')
+red_patch = mpatches.Patch(color='r', label='First Principal Component')
+blue_patch = mpatches.Patch(color='g', label='Second Principal Component')
 
-# plt.legend(handles=[red_patch, blue_patch])
-# plt.xlim(-7,7)
-# plt.ylim(-3,3)
-# plt.savefig(os.path.join('figures', "sinuid_PCA.pdf"))
-# plt.close()
-# print("Done with generating a plot where PCA is not informative (Figure 1)")
+plt.legend(handles=[red_patch, blue_patch])
+plt.xlim(-7,7)
+plt.ylim(-3,3)
+plt.savefig(os.path.join('figures', "sinuid_PCA.pdf"))
+plt.close()
+print("Done with generating a plot where PCA is not informative (Figure 1)")
 
-# sys.exit(1)
-# ###############################################################################
-# # Average score of observations on PC2 in a sliding window along PC1 (Figure 2)
-# ###############################################################################
+###############################################################################
+# Average score of observations on PC2 in a sliding window along PC1 (Figure 2)
+###############################################################################
 
-# PC1=velArrayOut[:,0,0]
-# PC2=velArrayOut[:,1,0]
-# PC1_vel = velArrayOut[:,0,1]*100
-# PC2_vel = velArrayOut[:,1,1]*100
+PC1=velArrayOut[:,0,0]
+PC2=velArrayOut[:,1,0]
+PC1_vel = velArrayOut[:,0,1]*100
+PC2_vel = velArrayOut[:,1,1]*100
 
-# window_width =1.0
-# overlap = .5
-
-
-# score_list = []
-# vel_list = []
-# score_std_list = []
-# vel_std_list = []
-
-# score_error_list = []
-# vel_error_list = []
+window_width =1.0
+overlap = .5
 
 
-# center_list = []
+score_list = []
+vel_list = []
+score_std_list = []
+vel_std_list = []
 
-# PC1_min = np.min(PC1)
-# PC1_max = np.max(PC1)
+score_error_list = []
+vel_error_list = []
 
-# n_window = np.ceil( (PC1_max - PC1_min - window_width)/(window_width-overlap) ).astype(int)
 
-# for i in range(n_window):
-#     window = np.array([PC1_min+i*(window_width-overlap), PC1_min+i*(window_width-overlap)+window_width])
-#     center = np.mean(window)
-#     loc = (window[0]<=PC1) * (PC1<window[1])
+center_list = []
+
+PC1_min = np.min(PC1)
+PC1_max = np.max(PC1)
+
+n_window = np.ceil( (PC1_max - PC1_min - window_width)/(window_width-overlap) ).astype(int)
+
+for i in range(n_window):
+    window = np.array([PC1_min+i*(window_width-overlap), PC1_min+i*(window_width-overlap)+window_width])
+    center = np.mean(window)
+    loc = (window[0]<=PC1) * (PC1<window[1])
     
-#     PC2_in_window = PC2[loc]
-#     PC2_vel_in_window = PC2_vel[loc]
-#     PC2_vel_in_window = PC2_vel_in_window[~np.isnan(PC2_vel_in_window)]
+    PC2_in_window = PC2[loc]
+    PC2_vel_in_window = PC2_vel[loc]
+    PC2_vel_in_window = PC2_vel_in_window[~np.isnan(PC2_vel_in_window)]
     
-#     score = np.mean(PC2_in_window)
-#     vel = np.mean(PC2_vel_in_window)
-#     score_std = np.std(PC2_in_window)
-#     vel_std = np.std(PC2_vel_in_window)
+    score = np.mean(PC2_in_window)
+    vel = np.mean(PC2_vel_in_window)
+    score_std = np.std(PC2_in_window)
+    vel_std = np.std(PC2_vel_in_window)
 
-#     score_error = score_std/np.sqrt(len(PC2_in_window) )
-#     vel_error = vel_std/np.sqrt( len(PC2_vel_in_window) )
+    score_error = score_std/np.sqrt(len(PC2_in_window) )
+    vel_error = vel_std/np.sqrt( len(PC2_vel_in_window) )
 
     
-#     center_list.append(center)
-#     score_list.append(score)
-#     vel_list.append(vel)
-#     score_std_list.append(score_std)
-#     vel_std_list.append(vel_std)
+    center_list.append(center)
+    score_list.append(score)
+    vel_list.append(vel)
+    score_std_list.append(score_std)
+    vel_std_list.append(vel_std)
     
-#     score_error_list.append(score_error)
-#     vel_error_list.append(vel_error)
+    score_error_list.append(score_error)
+    vel_error_list.append(vel_error)
    
-# plt.axis()
-# plt.xlim(-6,5)
-# #plt.ylim(-3,3)
-# plt.plot(center_list, score_list, 'b-o')
-# plt.errorbar(center_list, score_list, yerr=score_error_list, capthick=2, capsize=3)
-# plt.xlabel("PC1 (center of window_widthow)")
-# plt.ylabel("Average PC2")
-# plt.savefig(os.path.join('figures', "Average_PC2_value.pdf"))
-# plt.close()
-# print("Done with average pc2 value plot (Figure 2)")
+plt.axis()
+plt.xlim(-6,5)
+#plt.ylim(-3,3)
+plt.plot(center_list, score_list, 'b-o')
+plt.errorbar(center_list, score_list, yerr=score_error_list, capthick=2, capsize=3)
+plt.xlabel("PC1 (center of window)")
+plt.ylabel("Average PC2")
+plt.savefig(os.path.join('figures', "Average_PC2_value.pdf"))
+plt.close()
+print("Done with average pc2 value plot (Figure 2)")
 
-# ##########################################################################################
-# # Average PC value for PC2 with subset of CCs (Figure 3)
-# ##########################################################################################
+##########################################################################################
+# Average PC value for PC2 with subset of CCs (Figure 3)
+##########################################################################################
 
-# CC_scaled_df = pd.DataFrame(CC_scaled,columns=[ 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money' ])
-# CC_scaled_df[['NGA','Time']] = CC_df[['NGA','Time']]
+CC_scaled_df = pd.DataFrame(CC_scaled,columns=[ 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money' ])
+CC_scaled_df[['NGA','Time']] = CC_df[['NGA','Time']]
 
-# CC_reshape = CC_scaled_df.groupby(['NGA','Time']).mean().reset_index()
-# CC_fwd = CC_reshape.groupby(['NGA']).shift(-1)
+CC_reshape = CC_scaled_df.groupby(['NGA','Time']).mean().reset_index()
+CC_fwd = CC_reshape.groupby(['NGA']).shift(-1)
 
-# CC_out = CC_fwd[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']] - CC_reshape[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']] 
-# CC_out['NGA'] = CC_reshape['NGA']
+CC_out = CC_fwd[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']] - CC_reshape[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']] 
+CC_out['NGA'] = CC_reshape['NGA']
 
-# CC_out_vel = CC_out[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']].div(CC_out['Time'],axis=0) *100.
-# CC_out_vel.columns = [str(col) + '_vel' for col in CC_out_vel.columns]
-# CC_out_vel['NGA'] = CC_out['NGA']
+CC_out_vel = CC_out[['Time', 'PolPop', 'PolTerr', 'CapPop', 'levels', 'government','infrastr', 'writing', 'texts', 'money']].div(CC_out['Time'],axis=0) *100.
+CC_out_vel.columns = [str(col) + '_vel' for col in CC_out_vel.columns]
+CC_out_vel['NGA'] = CC_out['NGA']
 
-# cc_all = CC_reshape.drop(columns=['NGA','Time']).values
-# pc_all = velArrayOut[:,:,0]
-# PC1 = pc_all[:,0]
-# PC2 = pc_all[:,1]
+cc_all = CC_reshape.drop(columns=['NGA','Time']).values
+pc_all = velArrayOut[:,:,0]
+PC1 = pc_all[:,0]
+PC2 = pc_all[:,1]
 
-# lr_pc1 = LinearRegression(fit_intercept=False)
-# lr_pc1.fit(cc_all, pc_all[:,0].reshape([-1,1]))
-# pc1_coeff = lr_pc1.coef_
+lr_pc1 = LinearRegression(fit_intercept=False)
+lr_pc1.fit(cc_all, pc_all[:,0].reshape([-1,1]))
+pc1_coeff = lr_pc1.coef_
 
-# lr_pc2 = LinearRegression(fit_intercept=False)
-# lr_pc2.fit(cc_all, pc_all[:,1].reshape([-1,1]))
-# pc2_coeff = lr_pc2.coef_
+lr_pc2 = LinearRegression(fit_intercept=False)
+lr_pc2.fit(cc_all, pc_all[:,1].reshape([-1,1]))
+pc2_coeff = lr_pc2.coef_
 
-# pc2_coeff_negative = copy.deepcopy(pc2_coeff)
-# pc2_coeff_negative[0,4:]=0.
-# pc2_coeff_positive = copy.deepcopy(pc2_coeff)
-# pc2_coeff_positive[0,:4]=0.
+pc2_coeff_negative = copy.deepcopy(pc2_coeff)
+pc2_coeff_negative[0,4:]=0.
+pc2_coeff_positive = copy.deepcopy(pc2_coeff)
+pc2_coeff_positive[0,:4]=0.
 
-# pc2_negativeCC_only = np.dot( cc_all, pc2_coeff_negative.T ).flatten()
-# pc2_positiveCC_only = np.dot( cc_all, pc2_coeff_positive.T ).flatten()
+pc2_negativeCC_only = np.dot( cc_all, pc2_coeff_negative.T ).flatten()
+pc2_positiveCC_only = np.dot( cc_all, pc2_coeff_positive.T ).flatten()
 
-# window_width=1.
-# overlap=.5
-# pc2_negative_mean_list = []
-# pc2_positive_mean_list = []
-# pc2_mean_list = []
-# center_list = []
+window_width=1.
+overlap=.5
+pc2_negative_mean_list = []
+pc2_positive_mean_list = []
+pc2_mean_list = []
+center_list = []
 
-# PC1_min = np.min(PC1)
-# PC1_max = np.max(PC1)
+PC1_min = np.min(PC1)
+PC1_max = np.max(PC1)
 
-# n_window = np.ceil( (PC1_max - PC1_min - window_width)/(window_width-overlap) ).astype(int)
+n_window = np.ceil( (PC1_max - PC1_min - window_width)/(window_width-overlap) ).astype(int)
 
-# for i in range(n_window):
-#     window = np.array([PC1_min+i*(window_width-overlap), PC1_min+i*(window_width-overlap)+window_width])
-#     center = np.mean(window)
-#     loc = (window[0]<=PC1) * (PC1<window[1])
+for i in range(n_window):
+    window = np.array([PC1_min+i*(window_width-overlap), PC1_min+i*(window_width-overlap)+window_width])
+    center = np.mean(window)
+    loc = (window[0]<=PC1) * (PC1<window[1])
     
-#     pc2_negative_mean_list.append(np.mean(pc2_negativeCC_only[loc])  )
-#     pc2_positive_mean_list.append(np.mean(pc2_positiveCC_only[loc])  )
-#     pc2_mean_list.append( np.mean( PC2[loc] ) )    
+    pc2_negative_mean_list.append(np.mean(pc2_negativeCC_only[loc])  )
+    pc2_positive_mean_list.append(np.mean(pc2_positiveCC_only[loc])  )
+    pc2_mean_list.append( np.mean( PC2[loc] ) )    
     
-#     center_list.append(center)
+    center_list.append(center)
     
-# plt.axis()
-# plt.xlim(-6,5)
-# #plt.ylim(-3,3)
-# plt.plot(center_list, pc2_negative_mean_list, label='negative CC')
-# plt.plot(center_list, pc2_positive_mean_list, label='positive CC')
-# plt.plot(center_list, pc2_mean_list, label='Overall')
+plt.axis()
+plt.xlim(-6,5)
+#plt.ylim(-3,3)
+plt.plot(center_list, pc2_negative_mean_list, label='negative PC2 components')
+plt.plot(center_list, pc2_positive_mean_list, label='positive PC2 components')
+plt.plot(center_list, pc2_mean_list, label='all 9 components')
 
-# plt.xlabel("PC1 (center of window)")
-# plt.ylabel("average PC2 with subset of CC")
-# plt.legend()
-# # plt.title("Average PC2 with subset of CC(window %.3f, step %.3f)"%(window_width,window_width-overlap))
-# # plt.savefig("Average_PC2_with_subset_of_CC(window %.3f, step %.3f).pdf"%(window_width,window_width-overlap))
-# plt.savefig(os.path.join('figures', "Average_PC2_with_subset_of_CC.pdf"))
-# plt.close()
-# print("Done with average pc2 subset plot (Figure 3)")
+plt.xlabel("PC1 (center of window)")
+plt.ylabel("sum over CCs with positive /negative PC2 components")
+plt.legend()
+# plt.title("Average PC2 with subset of CC(window %.3f, step %.3f)"%(window_width,window_width-overlap))
+# plt.savefig("Average_PC2_with_subset_of_CC(window %.3f, step %.3f).pdf"%(window_width,window_width-overlap))
+plt.savefig(os.path.join('figures', "Average_PC2_with_subset_of_CC.pdf"))
+plt.close()
+print("Done with average pc2 subset plot (Figure 3)")
 
-# ##############################################################################
-# # Creating movement plot [in the spirit of OUT_in_the_data] (Figure 4)
-# ##############################################################################
-# plt.figure(figsize=(15,8))
-# plt.axis()
-# plt.xlim(-6,5)
-# plt.ylim(-3,3)
-# plt.xticks(size=25)
-# plt.yticks(size=25)
+##############################################################################
+# Creating movement plot [in the spirit of OUT_in_the_data] (Figure 4)
+##############################################################################
+plt.figure(figsize=(15,8))
+plt.axis()
+plt.xlim(-6,5)
+plt.ylim(-3,3)
+plt.xticks(size=25)
+plt.yticks(size=25)
 
-# # plt.rc('xtick', labelsize=30)
-# # plt.rc('ytick', labelsize=30)
-# # plt.rc('font',    size=30)
-# pc3Min = min(movArrayOut[:,2,0][~np.isnan(movArrayOut[:,0,1])])
-# pc3Max = max(movArrayOut[:,2,0][~np.isnan(movArrayOut[:,0,1])])
-# newWorld = ['North America','South America']
-# # The following plotting parameters are used for all movement plots
-# lineWidth = .01
-# headWidth = .15
-# headLength = .1
-# arrowAlpha = 1 # Transparency
-# for i in range(0,movArrayOut.shape[0]):
-#     if not np.isnan(movArrayOut[i,0,1]):
-#         nga = flowInfo['NGA'][i]
-#         region = [key for key,value in regionDict.items() if nga in value][0]
-#         #rgb = cm.inferno((movArrayOut[i,2,0] - pc3Min) / (pc3Max - pc3Min))
-#         if region in newWorld:
-#           rgb = (1,0,0,arrowAlpha)
-#         else:
-#           rgb = (0,0,1,arrowAlpha)
-#         plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],
-#         		width=lineWidth,head_width=headWidth,head_length=headLength,color=rgb)
-#         # Next, plot interpolated points (if necessary)
-#         # Doing this all very explicitly to make the code clearer
-#         dt = velArrayOut[i,0,2]
-#         if dt > 100:
-#           for n in range(0,int(dt / 100) - 1):
-#             pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
-#             pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
-#             plt.scatter(pc1,pc2, s=5,  color=rgb)
-# #sm = plt.cm.ScalarMappable(cmap=plt.cm.inferno,norm=plt.Normalize(vmin=pc3Min, vmax=pc3Max))
-# #sm._A = []
-# #plt.colorbar(sm)
+# plt.rc('xtick', labelsize=30)
+# plt.rc('ytick', labelsize=30)
+# plt.rc('font',    size=30)
+pc3Min = min(movArrayOut[:,2,0][~np.isnan(movArrayOut[:,0,1])])
+pc3Max = max(movArrayOut[:,2,0][~np.isnan(movArrayOut[:,0,1])])
+newWorld = ['North America','South America']
+# The following plotting parameters are used for all movement plots
+lineWidth = .01
+headWidth = .15
+headLength = .1
+arrowAlpha = 1 # Transparency
+for i in range(0,movArrayOut.shape[0]):
+    if not np.isnan(movArrayOut[i,0,1]):
+        nga = flowInfo['NGA'][i]
+        region = [key for key,value in regionDict.items() if nga in value][0]
+        #rgb = cm.inferno((movArrayOut[i,2,0] - pc3Min) / (pc3Max - pc3Min))
+        if region in newWorld:
+          rgb = (1,0,0,arrowAlpha)
+        else:
+          rgb = (0,0,1,arrowAlpha)
+        plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],
+        		width=lineWidth,head_width=headWidth,head_length=headLength,color=rgb)
+        # Next, plot interpolated points (if necessary)
+        # Doing this all very explicitly to make the code clearer
+        dt = velArrayOut[i,0,2]
+        if dt > 100:
+          for n in range(0,int(dt / 100) - 1):
+            pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
+            pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
+            plt.scatter(pc1,pc2, s=5,  color=rgb)
+#sm = plt.cm.ScalarMappable(cmap=plt.cm.inferno,norm=plt.Normalize(vmin=pc3Min, vmax=pc3Max))
+#sm._A = []
+#plt.colorbar(sm)
 
-# plt.xlabel("PC1", size=25)
-# plt.ylabel("PC2", size=25)
-# plt.savefig(os.path.join('figures', "pc12_movement_plot.pdf"))
-# plt.close()
-# print("Done with pc12 movmeent plot (Figure 4)")
+plt.xlabel("PC1", size=25)
+plt.ylabel("PC2", size=25)
+plt.savefig(os.path.join('figures', "pc12_movement_plot.pdf"))
+plt.close()
+print("Done with pc12 movmeent plot (Figure 4)")
 
-# ###############################################################################
-# # Creating movement plot for Moralizing Gods (Figure 5)
-# ###############################################################################
-# mgMissCol = 'grey'
-# mgAbsnCol = 'blue'
-# mgPresCol = 'green'
-# mgScatCol = 'red'
+###############################################################################
+# Creating movement plot for Moralizing Gods (Figure 5)
+###############################################################################
+mgMissCol = 'grey'
+mgAbsnCol = 'blue'
+mgPresCol = 'green'
+mgScatCol = 'red'
 
-# plt.figure(figsize=(17,8.85))
-# plt.axis('scaled')
-# plt.xlim(-6,5)
-# plt.ylim(-3,3)
-# plt.xticks(size=25)
-# plt.yticks(size=25)
+plt.figure(figsize=(17,8.85))
+plt.axis('scaled')
+plt.xlim(-6,5)
+plt.ylim(-3,3)
+plt.xticks(size=25)
+plt.yticks(size=25)
 
-# mg_df = pd.read_csv('./mhg_code/data_used_for_nature_analysis.csv')
-# nat_df = pd.read_csv('./mhg_code/41586_2019_1043_MOESM6_ESM_sheet1.csv')
-# NGAs_nat = np.unique(nat_df['NGA'].values)
-# mg_tab = pd.DataFrame(columns=['NGA','Start','Stop','Value','Nature'])
+mg_df = pd.read_csv('./mhg_code/data_used_for_nature_analysis.csv')
+nat_df = pd.read_csv('./mhg_code/41586_2019_1043_MOESM6_ESM_sheet1.csv')
+NGAs_nat = np.unique(nat_df['NGA'].values)
+mg_tab = pd.DataFrame(columns=['NGA','Start','Stop','Value','Nature'])
 
-# mg_one_list=[]
-# for i in range(0,movArrayOut.shape[0]):
-#     if not np.isnan(movArrayOut[i,0,1]):
-#         nga = flowInfo['NGA'][i]
-#         time = flowInfo['Time'][i]
-#         if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].shape[0]>0:
-#             if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==0:
-#                 rgb = mgAbsnCol
-#             elif mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==1:
-#                 rgb = mgPresCol
-#                 if not nga in mg_one_list:
-#                     rgb0 = 'orange'
-#                     if nga in NGAs_nat:
-#                         rgb0 = mgScatCol
-#                     else:
-#                         rgb0 = 'orange'
-#                     plt.scatter(velArrayOut[i,0,0],velArrayOut[i,1,0], color=rgb0,zorder=2)
-#                     mg_one_list.append( nga )
-#             else:
-#                 rgb = mgMissCol
+mg_one_list=[]
+for i in range(0,movArrayOut.shape[0]):
+    if not np.isnan(movArrayOut[i,0,1]):
+        nga = flowInfo['NGA'][i]
+        time = flowInfo['Time'][i]
+        if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].shape[0]>0:
+            if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==0:
+                rgb = mgAbsnCol
+            elif mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==1:
+                rgb = mgPresCol
+                if not nga in mg_one_list:
+                    rgb0 = 'orange'
+                    if nga in NGAs_nat:
+                        rgb0 = mgScatCol
+                    else:
+                        rgb0 = 'orange'
+                    plt.scatter(velArrayOut[i,0,0],velArrayOut[i,1,0], color=rgb0,zorder=2)
+                    mg_one_list.append( nga )
+            else:
+                rgb = mgMissCol
 
-#         plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],width=lineWidth,
-#         		head_width=headWidth,head_length=headLength,color=rgb,alpha=.5,zorder=1)
+        plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],width=lineWidth,
+        		head_width=headWidth,head_length=headLength,color=rgb,alpha=.5,zorder=1)
         
-#         # Next, plot interpolated points (if necessary)
-#         # Doing this all very explicitly to make the code clearer
-#         dt = velArrayOut[i,0,2]
-#         if dt > 100:
-#           for n in range(0,int(dt / 100) - 1):
-#             pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
-#             pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
-#             plt.scatter(pc1,pc2,s=10,color=rgb,alpha=.5,zorder=1)
+        # Next, plot interpolated points (if necessary)
+        # Doing this all very explicitly to make the code clearer
+        dt = velArrayOut[i,0,2]
+        if dt > 100:
+          for n in range(0,int(dt / 100) - 1):
+            pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
+            pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
+            plt.scatter(pc1,pc2,s=10,color=rgb,alpha=.5,zorder=1)
 
-# plt.xlabel("PC1", size=25)
-# plt.ylabel("PC2", size=25)
-# plt.savefig(os.path.join('figures', "pc12_movement_plot_colored_by_MoralisingGods.pdf"))
-# plt.close()
-# print("Done with pc12 movement plot with mg (Figure 5)")
+plt.xlabel("PC1", size=25)
+plt.ylabel("PC2", size=25)
+plt.savefig(os.path.join('figures', "pc12_movement_plot_colored_by_MoralisingGods.pdf"))
+plt.close()
+print("Done with pc12 movement plot with mg (Figure 5)")
 
 
-# ###############################################################################
-# # Generate histogram of PC1 for pooled imputations (Supplementary Figure 1)
-# ###############################################################################
-# print('Making PC1 histogram')
-# num_bins = 50
-# n, bins, patches = plt.hist(PC_matrix[:,0], num_bins, density=0, facecolor='blue', alpha=0.5)
-# #plt.title("Pooled over imputations")
-# plt.xlabel("Projection onto first Principal Component")
-# plt.ylabel("Counts")
-# #plt.legend()
-# fileStem = "pc1_histogram"
-# plt.savefig(os.path.join('figures', fileStem + ".pdf"))
-# plt.close()
-# print("Done with pc1 histogram plot (Figure 1")
+###############################################################################
+# Generate histogram of PC1 for pooled imputations (Supplementary Figure 1)
+###############################################################################
+print('Making PC1 histogram')
+num_bins = 50
+n, bins, patches = plt.hist(PC_matrix[:,0], num_bins, density=0, facecolor='blue', alpha=0.5)
+#plt.title("Pooled over imputations")
+plt.xlabel("Projection onto first Principal Component")
+plt.ylabel("Counts")
+#plt.legend()
+fileStem = "pc1_histogram"
+plt.savefig(os.path.join('figures', fileStem + ".pdf"))
+plt.close()
+print("Done with pc1 histogram plot (Figure 1")
 
-# ###############################################################################
-# # Generate pc12 scatter plot (Supplementary Figure 2)
-# ###############################################################################
-# print('Making PC1-PC2 scatter plot')
-# # Fit Gaussian Mixture
-# gmm = GMM(n_components=2).fit(PC_matrix)
-# cov = gmm.covariances_
-# prob_distr = gmm.predict_proba(PC_matrix)
+###############################################################################
+# Generate pc12 scatter plot (Supplementary Figure 2)
+###############################################################################
+print('Making PC1-PC2 scatter plot')
+# Fit Gaussian Mixture
+gmm = GMM(n_components=2).fit(PC_matrix)
+cov = gmm.covariances_
+prob_distr = gmm.predict_proba(PC_matrix)
 
-# # determine to which of the two gaussians each data point belongs by looking at probability distribution 
-# gauss1_idx = [i for i in range(len(prob_distr)) if prob_distr[i][0] >= prob_distr[i][1]]
-# gauss2_idx = [j for j in range(len(prob_distr)) if prob_distr[j][1] >= prob_distr[j][0]]
+# determine to which of the two gaussians each data point belongs by looking at probability distribution 
+gauss1_idx = [i for i in range(len(prob_distr)) if prob_distr[i][0] >= prob_distr[i][1]]
+gauss2_idx = [j for j in range(len(prob_distr)) if prob_distr[j][1] >= prob_distr[j][0]]
 
-# gauss1_time = [CC_times[i] for i in gauss1_idx] # time for the first gaussian data
-# gauss2_time = [CC_times[j] for j in gauss2_idx] # time for the second gaussian data
+gauss1_time = [CC_times[i] for i in gauss1_idx] # time for the first gaussian data
+gauss2_time = [CC_times[j] for j in gauss2_idx] # time for the second gaussian data
 
-# gauss1_pc1 = [PC_matrix[:,0][i] for i in gauss1_idx] # first pc values for the first gaussian
-# gauss2_pc1 = [PC_matrix[:,0][j] for j in gauss2_idx] # first pc values for the second gaussian
+gauss1_pc1 = [PC_matrix[:,0][i] for i in gauss1_idx] # first pc values for the first gaussian
+gauss2_pc1 = [PC_matrix[:,0][j] for j in gauss2_idx] # first pc values for the second gaussian
 
-# gauss1_pc2 = [PC_matrix[:,1][i] for i in gauss1_idx]
-# gauss2_pc2 = [PC_matrix[:,1][j] for j in gauss2_idx]
+gauss1_pc2 = [PC_matrix[:,1][i] for i in gauss1_idx]
+gauss2_pc2 = [PC_matrix[:,1][j] for j in gauss2_idx]
 
-# # Figure 2
-# plt.scatter(gauss1_pc1, gauss1_pc2, s=3, c='r')
-# plt.scatter(gauss2_pc1, gauss2_pc2, s=3, c='b')
-# plt.gca().set_aspect('equal', adjustable='box')
-# plt.xlabel('First Principal Component')
-# plt.ylabel('Second Principal Component')
-# plt.savefig(os.path.join('figures', 'pc12_scatter.pdf'), transparent=False)
-# plt.close()
-# print('Done with PC1-PC2 scatter plot (Supplementary Figure 2)')
+# Figure 2
+plt.scatter(gauss1_pc1, gauss1_pc2, s=3, c='r')
+plt.scatter(gauss2_pc1, gauss2_pc2, s=3, c='b')
+plt.gca().set_aspect('equal', adjustable='box')
+plt.xlabel('First Principal Component')
+plt.ylabel('Second Principal Component')
+plt.savefig(os.path.join('figures', 'pc12_scatter.pdf'), transparent=False)
+plt.close()
+print('Done with PC1-PC2 scatter plot (Supplementary Figure 2)')
 
 ##########################################################################################################
 # plot for changing the threshold percentage of Gaussian probability distribution (Supplementary Figure 3)
@@ -431,15 +430,15 @@ for i in range(100):
     threshold += '9'
     
 f, axes = plt.subplots(1, 2, sharey=True,figsize=(14,6))
-axes[1].plot(range(len(range_val)), idx_len)
+axes[0].plot(range(len(range_val)), idx_len)
 # axes[0].set_title('threshold_plot1', fontsize=10)
-axes[1].set_xlabel('number of digits used')
+axes[0].set_xlabel('number of digits used')
 # axes[1].set_ylabel('number of points included')
 
 axes[0].set_ylabel('number of points included')
-axes[0].plot([i*100 for i in range_val], idx_len)
+axes[1].plot([i*100 for i in range_val], idx_len)
 # axes[1].set_title('threshold_plot2', fontsize=10)
-axes[0].set_xlabel('percentage of threshold')
+axes[1].set_xlabel('percentage of threshold')
 f.subplots_adjust(hspace=.5)
 
 plt.savefig(os.path.join('figures', "threshold.pdf"))
@@ -786,7 +785,7 @@ def nga_specific_iteration_length(years_move, n_bin=10, n_iter=20, flag_barrier=
     plt.savefig(os.path.join('figures', "simulated-histogram-transition-matrix-NGA-specific-length-%iyears.pdf"%(years_move)))
     plt.close()
 
-# Figure 5a
+# Figure 6a
 nga_specific_iteration_length(500)
 
 n_bin=10
@@ -819,7 +818,7 @@ for i in range(30):
     dist_cum_final_from_unif = np.sum(dist_transition_from_unif_list[i],axis=0)
     dist_sum_NGA_from_unif = (dist_sum_NGA_from_unif +dist_cum_final_from_unif.flatten() )
 
-# Figure 5e
+# Figure 6e
 plt.bar(np.array(center_list), dist_sum_NGA_from_unif, color='y')
 plt.savefig(os.path.join('figures', 
 	"simulated-histogram-starting-from-uniform-dist(iter%i-bins%i-timescale%iyears-barrier%i).pdf"%(n_iter, n_bin,years_move,flag_barrier)))
@@ -855,7 +854,7 @@ dist_sum_NGA = np.zeros(n_bin)
 for i in range(30):
     dist_cum_final = np.sum(dist_transition_list[i],axis=0)
     dist_sum_NGA = (dist_sum_NGA +dist_cum_final.flatten() )
-plt.bar(np.array(center_list), dist_sum_NGA, color='y')
+# plt.bar(np.array(center_list), dist_sum_NGA, color='y')
 
 '''
 KL divergence of original and modified transition, controlling mean and variance.
@@ -885,7 +884,7 @@ def func_obj(p, *args):
 '''
 Simulate transition with modified transition matrix
 '''    
-def sim_trans(transition_prob_matrix,figtitle=None,filename=None):
+def sim_trans(transition_prob_matrix,figtitle=None,filename=None, color='g'):
     init_position_list = []
     dist_transition_list = []
     dist_cum_transition_list = []
@@ -909,7 +908,7 @@ def sim_trans(transition_prob_matrix,figtitle=None,filename=None):
     for i in range(30):
         dist_cum_final = np.sum(dist_transition_list[i],axis=0)
         dist_sum_NGA = (dist_sum_NGA +dist_cum_final.flatten() )
-    plt.bar(center_list, dist_sum_NGA, color='g')
+    plt.bar(center_list, dist_sum_NGA, color=color)
     # plt.title(figtitle)
     plt.savefig(os.path.join('figures', filename))
     plt.close()
@@ -960,8 +959,8 @@ for i in range(1,8):
     
     transition_prob_matrix_modified[i,:] = p
 
-# Figure 6d
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean and variance in velocity',filename='simulated-histogram-fixed-mean-and-var.pdf')
+# # Figure 6d
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean and variance in velocity',filename='simulated-histogram-fixed-mean-and-var.pdf', color='b')
 
 #Match  var only
 transition_prob_matrix_modified = np.copy(transition_prob_matrix)
@@ -993,7 +992,7 @@ for i in range(1,8):
     transition_prob_matrix_modified[i,:] = p
 
 # Figure 6c
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed variance in velocity',filename='simulated-histogram-fixed-var.pdf')
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed variance in velocity',filename='simulated-histogram-fixed-var.pdf', color='c')
 
 #Match  mean only
 transition_prob_matrix_modified = np.copy(transition_prob_matrix)
@@ -1025,7 +1024,7 @@ for i in range(1,8):
     transition_prob_matrix_modified[i,:] = p
 
 # Figure 6b
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean in velocity',filename='simulated-histogram-fixed-mean.pdf')
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean in velocity',filename='simulated-histogram-fixed-mean.pdf', color='m')
 print("Done with simulation histogram (Supplementary Figure 6)")
 
 # Figure 5
@@ -1099,8 +1098,8 @@ print(f"Done with simulation models (Supplementary Figure 8)")
 # Interpolation plots (Supplementary Figure 9)
 ###############################################################################
 
-dataPath1 = os.path.abspath(os.path.join("./..","Seshat_arxiv","pnas_data1.csv")) #20 imputed sets
-dataPath2 = os.path.abspath(os.path.join("./..","Seshat_arxiv","pnas_data2.csv")) #Turchin's PCs
+dataPath1 = os.path.abspath(os.path.join("./..","Seshat_arxiv","data1.csv")) #20 imputed sets
+dataPath2 = os.path.abspath(os.path.join("./..","Seshat_arxiv","data2.csv")) #Turchin's PCs
 
 pnas_data1 = pd.read_csv(dataPath1)
 pnas_data2 = pd.read_csv(dataPath2)
