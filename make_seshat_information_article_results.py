@@ -1098,8 +1098,8 @@ print(f"Done with simulation models (Supplementary Figure 8)")
 # Interpolation plots (Supplementary Figure 9)
 ###############################################################################
 
-dataPath1 = os.path.abspath(os.path.join("./..","Seshat_arxiv","data1.csv")) #20 imputed sets
-dataPath2 = os.path.abspath(os.path.join("./..","Seshat_arxiv","data2.csv")) #Turchin's PCs
+dataPath1 = os.path.abspath(os.path.join("./..","data1.csv")) #20 imputed sets
+dataPath2 = os.path.abspath(os.path.join("./..","data2.csv")) #Turchin's PCs
 
 pnas_data1 = pd.read_csv(dataPath1)
 pnas_data2 = pd.read_csv(dataPath2)
