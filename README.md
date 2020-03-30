@@ -1,4 +1,4 @@
-# From Scale to Information and Back: Human Social Evolution inthe Holocene
+# Scale and Information-Processing Thresholds in Holocene Social Evolution
 
 
 This github repository contains all the codes that were used for analysis in:
