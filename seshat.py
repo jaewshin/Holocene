@@ -7,7 +7,7 @@ from scipy.stats import multivariate_normal, norm
 from matplotlib import pyplot as plt, cm as cm, mlab as mlab
 from matplotlib.patches import Patch
 from sklearn.preprocessing import StandardScaler
-import seaborn as sns; sns.set()
+# import seaborn as sns; sns.set()
 from collections import defaultdict
 import os
 import math

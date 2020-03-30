@@ -23,11 +23,12 @@ from matplotlib.patches import Patch
 from matplotlib.patches import Rectangle
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
-import seaborn as sns; sns.set()
 from IPython.core.debugger import Pdb
-
+import cmocean
 from seshat import *
-    
+import matplotlib as mpl
+import string
+
 # Call generate_core_data (see seshat module defined in seshat.py) to load data for subsequent analyses
 print('Calling generate_core_data')
 worldRegions,NGAs,PC_matrix,CC_df, CC_times, CC_scaled, PC1_df,regionDict,t_min,t_max,pc1_min,pc1_max,flowInfo, movArrayOut,velArrayOut,movArrayIn,velArrayIn,flowInfoInterp,movArrayOutInterp,r0,minPoints,dGrid,u0Vect,v0Vect,velScaling = generate_core_data()
@@ -35,9 +36,9 @@ worldRegions,NGAs,PC_matrix,CC_df, CC_times, CC_scaled, PC1_df,regionDict,t_min,
 # # create a directory to store all the generated plots
 createFolder('figures')
 
-####################################################
+###################################################
 # PCA on data drawn from sinuid function (Figure 1)
-####################################################
+###################################################
 
 def x(t):
 	return t
@@ -45,7 +46,7 @@ def x(t):
 def y(t):
 	return np.sin(2*t)
 
-def draw_vector(v0, v1, ax=None, color='r', label=''):
+def draw_vector(v0, v1, ax=None, color='b', label=''):
 	ax = ax or plt.gca()
 	arrowprops=dict(arrowstyle='->',
 		linewidth=2,
@@ -64,8 +65,8 @@ pca = PCA(n_components=2, svd_solver='full')
 pca.fit(data)
 
 fig, ax = plt.subplots()
-plt.scatter(xval, yval)
-plt.plot(xval, yval, linewidth=1)
+plt.scatter(xval, yval, color='black', s=2.5)
+plt.plot(xval, yval, color='black')
 
 i=0
 
@@ -73,26 +74,28 @@ for length, vector in zip(pca.explained_variance_, pca.components_):
 	v = vector * 1 * np.sqrt(length)
 
 	if i==0:
-		color = 'r'
+		color = 'b'
 		label = 'PC1'
 		draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
 		draw_vector(pca.mean_, pca.mean_ - v, color=color)
 
 	else:
-		color = 'g'
+		color = 'r'
 		label = 'PC2'
 		a2 = draw_vector(pca.mean_, pca.mean_ + v, color=color, label=label)
 		draw_vector(pca.mean_, pca.mean_ - v, color=color)
 
 	i+=1
 
-red_patch = mpatches.Patch(color='r', label='First Principal Component')
-blue_patch = mpatches.Patch(color='g', label='Second Principal Component')
+red_patch = mpatches.Patch(color='b', label='First Principal Component')
+blue_patch = mpatches.Patch(color='r', label='Second Principal Component')
 
 plt.legend(handles=[red_patch, blue_patch])
 plt.xlim(-7,7)
 plt.ylim(-3,3)
-plt.savefig(os.path.join('figures', "sinuid_PCA.pdf"))
+plt.xlabel("x")
+plt.ylabel("y")
+plt.savefig(os.path.join('figures', "sinuid_PCA.pdf"), transparent=True)
 plt.close()
 print("Done with generating a plot where PCA is not informative (Figure 1)")
 
@@ -108,7 +111,6 @@ PC2_vel = velArrayOut[:,1,1]*100
 window_width =1.0
 overlap = .5
 
-
 score_list = []
 vel_list = []
 score_std_list = []
@@ -116,7 +118,6 @@ vel_std_list = []
 
 score_error_list = []
 vel_error_list = []
-
 
 center_list = []
 
@@ -159,7 +160,7 @@ plt.plot(center_list, score_list, 'b-o')
 plt.errorbar(center_list, score_list, yerr=score_error_list, capthick=2, capsize=3)
 plt.xlabel("PC1 (center of window)")
 plt.ylabel("Average PC2")
-plt.savefig(os.path.join('figures', "Average_PC2_value.pdf"))
+plt.savefig(os.path.join('figures', "Average_PC2_value.pdf"), transparent=True)
 plt.close()
 print("Done with average pc2 value plot (Figure 2)")
 
@@ -227,16 +228,16 @@ for i in range(n_window):
 plt.axis()
 plt.xlim(-6,5)
 #plt.ylim(-3,3)
-plt.plot(center_list, pc2_negative_mean_list, label='negative PC2 components')
-plt.plot(center_list, pc2_positive_mean_list, label='positive PC2 components')
-plt.plot(center_list, pc2_mean_list, label='all 9 components')
+plt.plot(center_list, pc2_negative_mean_list, label='negative PC2 components', color='blue')
+plt.plot(center_list, pc2_positive_mean_list, label='positive PC2 components', color='r')
+plt.plot(center_list, pc2_mean_list, label='all 9 components', color='black')
 
 plt.xlabel("PC1 (center of window)")
 plt.ylabel("sum over CCs with positive /negative PC2 components")
 plt.legend()
 # plt.title("Average PC2 with subset of CC(window %.3f, step %.3f)"%(window_width,window_width-overlap))
 # plt.savefig("Average_PC2_with_subset_of_CC(window %.3f, step %.3f).pdf"%(window_width,window_width-overlap))
-plt.savefig(os.path.join('figures', "Average_PC2_with_subset_of_CC.pdf"))
+plt.savefig(os.path.join('figures', "Average_PC2_with_subset_of_CC.pdf"), transparent=True)
 plt.close()
 print("Done with average pc2 subset plot (Figure 3)")
 
@@ -286,68 +287,68 @@ for i in range(0,movArrayOut.shape[0]):
 
 plt.xlabel("PC1", size=25)
 plt.ylabel("PC2", size=25)
-plt.savefig(os.path.join('figures', "pc12_movement_plot.pdf"))
+plt.savefig(os.path.join('figures', "pc12_movement_plot.pdf"), transparent=True)
 plt.close()
 print("Done with pc12 movmeent plot (Figure 4)")
 
-###############################################################################
-# Creating movement plot for Moralizing Gods (Figure 5)
-###############################################################################
-mgMissCol = 'grey'
-mgAbsnCol = 'blue'
-mgPresCol = 'green'
-mgScatCol = 'red'
+# ###############################################################################
+# # Creating movement plot for Moralizing Gods (Figure 5)
+# ###############################################################################
+# mgMissCol = 'grey'
+# mgAbsnCol = 'blue'
+# mgPresCol = 'green'
+# mgScatCol = 'red'
 
-plt.figure(figsize=(17,8.85))
-plt.axis('scaled')
-plt.xlim(-6,5)
-plt.ylim(-3,3)
-plt.xticks(size=25)
-plt.yticks(size=25)
+# plt.figure(figsize=(17,8.85))
+# plt.axis('scaled')
+# plt.xlim(-6,5)
+# plt.ylim(-3,3)
+# plt.xticks(size=25)
+# plt.yticks(size=25)
 
-mg_df = pd.read_csv('./mhg_code/data_used_for_nature_analysis.csv')
-nat_df = pd.read_csv('./mhg_code/41586_2019_1043_MOESM6_ESM_sheet1.csv')
-NGAs_nat = np.unique(nat_df['NGA'].values)
-mg_tab = pd.DataFrame(columns=['NGA','Start','Stop','Value','Nature'])
+# mg_df = pd.read_csv('./mhg_code/data_used_for_nature_analysis.csv')
+# nat_df = pd.read_csv('./mhg_code/41586_2019_1043_MOESM6_ESM_sheet1.csv')
+# NGAs_nat = np.unique(nat_df['NGA'].values)
+# mg_tab = pd.DataFrame(columns=['NGA','Start','Stop','Value','Nature'])
 
-mg_one_list=[]
-for i in range(0,movArrayOut.shape[0]):
-    if not np.isnan(movArrayOut[i,0,1]):
-        nga = flowInfo['NGA'][i]
-        time = flowInfo['Time'][i]
-        if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].shape[0]>0:
-            if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==0:
-                rgb = mgAbsnCol
-            elif mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==1:
-                rgb = mgPresCol
-                if not nga in mg_one_list:
-                    rgb0 = 'orange'
-                    if nga in NGAs_nat:
-                        rgb0 = mgScatCol
-                    else:
-                        rgb0 = 'orange'
-                    plt.scatter(velArrayOut[i,0,0],velArrayOut[i,1,0], color=rgb0,zorder=2)
-                    mg_one_list.append( nga )
-            else:
-                rgb = mgMissCol
+# mg_one_list=[]
+# for i in range(0,movArrayOut.shape[0]):
+#     if not np.isnan(movArrayOut[i,0,1]):
+#         nga = flowInfo['NGA'][i]
+#         time = flowInfo['Time'][i]
+#         if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].shape[0]>0:
+#             if mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==0:
+#                 rgb = mgAbsnCol
+#             elif mg_df.loc[ (mg_df['NGA']==nga) & (mg_df['Time']==time)]['MoralisingGods'].values[0]==1:
+#                 rgb = mgPresCol
+#                 if not nga in mg_one_list:
+#                     rgb0 = 'orange'
+#                     if nga in NGAs_nat:
+#                         rgb0 = mgScatCol
+#                     else:
+#                         rgb0 = 'orange'
+#                     plt.scatter(velArrayOut[i,0,0],velArrayOut[i,1,0], color=rgb0,zorder=2)
+#                     mg_one_list.append( nga )
+#             else:
+#                 rgb = mgMissCol
 
-        plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],width=lineWidth,
-        		head_width=headWidth,head_length=headLength,color=rgb,alpha=.5,zorder=1)
+#         plt.arrow(movArrayOut[i,0,0],movArrayOut[i,1,0],movArrayOut[i,0,1],movArrayOut[i,1,1],width=lineWidth,
+#         		head_width=headWidth,head_length=headLength,color=rgb,alpha=.5,zorder=1)
         
-        # Next, plot interpolated points (if necessary)
-        # Doing this all very explicitly to make the code clearer
-        dt = velArrayOut[i,0,2]
-        if dt > 100:
-          for n in range(0,int(dt / 100) - 1):
-            pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
-            pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
-            plt.scatter(pc1,pc2,s=10,color=rgb,alpha=.5,zorder=1)
+#         # Next, plot interpolated points (if necessary)
+#         # Doing this all very explicitly to make the code clearer
+#         dt = velArrayOut[i,0,2]
+#         if dt > 100:
+#           for n in range(0,int(dt / 100) - 1):
+#             pc1 = movArrayOut[i,0,0] + velArrayOut[i,0,1]*(float(n+1))*100.
+#             pc2 = movArrayOut[i,1,0] + velArrayOut[i,1,1]*(float(n+1))*100.
+#             plt.scatter(pc1,pc2,s=10,color=rgb,alpha=.5,zorder=1)
 
-plt.xlabel("PC1", size=25)
-plt.ylabel("PC2", size=25)
-plt.savefig(os.path.join('figures', "pc12_movement_plot_colored_by_MoralisingGods.pdf"))
-plt.close()
-print("Done with pc12 movement plot with mg (Figure 5)")
+# plt.xlabel("PC1", size=25)
+# plt.ylabel("PC2", size=25)
+# plt.savefig(os.path.join('figures', "pc12_movement_plot_colored_by_MoralisingGods.pdf"), transparent=True)
+# plt.close()
+# print("Done with pc12 movement plot with mg (Figure 5)")
 
 
 ###############################################################################
@@ -361,7 +362,7 @@ plt.xlabel("Projection onto first Principal Component")
 plt.ylabel("Counts")
 #plt.legend()
 fileStem = "pc1_histogram"
-plt.savefig(os.path.join('figures', fileStem + ".pdf"))
+plt.savefig(os.path.join('figures', fileStem + ".pdf"), transparent=True)
 plt.close()
 print("Done with pc1 histogram plot (Figure 1")
 
@@ -393,7 +394,7 @@ plt.scatter(gauss2_pc1, gauss2_pc2, s=3, c='b')
 plt.gca().set_aspect('equal', adjustable='box')
 plt.xlabel('First Principal Component')
 plt.ylabel('Second Principal Component')
-plt.savefig(os.path.join('figures', 'pc12_scatter.pdf'), transparent=False)
+plt.savefig(os.path.join('figures', 'pc12_scatter.pdf'), transparent=True)
 plt.close()
 print('Done with PC1-PC2 scatter plot (Supplementary Figure 2)')
 
@@ -441,7 +442,7 @@ axes[1].plot([i*100 for i in range_val], idx_len)
 axes[1].set_xlabel('percentage of threshold')
 f.subplots_adjust(hspace=.5)
 
-plt.savefig(os.path.join('figures', "threshold.pdf"))
+plt.savefig(os.path.join('figures', "threshold.pdf"), transparent=True)
 plt.close()
 print("Done with threshold plot (Supplementary Figure 3)")
 
@@ -581,59 +582,112 @@ angle_second = [angle(j, Q.T[:, 0]) for j in second_eigvec]
 num_bins = 200
 itera = [perc_one, perc_two, angle_first, angle_second, bstr_angle]
 names = ['largest_eignvalue1', 'largest_eigvenvalue2', 'angle1_pc1', 'angle2_pc1', 'angle_between']
+# gs = gridspec.GridSpec(3,1)
 
-fig = plt.figure(figsize=(15, 12))
-gs = gridspec.GridSpec(2, 18)
+original = [eigval1, eigval2, orig_angle1, orig_angle2, orig_angle]
+
+conf = 0.95
+conf_int = []
+
+for iters in range(len(itera)):
+    n = len(itera[iters])
+    bias = np.mean(itera[iters]) - original[iters]
+    lower = original[iters] - bias - 1.96 * np.std(itera[iters])
+    upper = original[iters] - bias + 1.96 * np.std(itera[iters])
+    conf_int.append([lower, upper])
+
+# fig = plt.figure(figsize=(6, 8))
+# ax = fig.add_subplot(gs[0])
+# ax.hist(pc_proj, num_bins, normed=1, facecolor='blue', alpha=0.5)
+
+# ax = fig.add_subplot(gs[1])
+# ax.hist(weighted, num_bins, normed=1, facecolor='blue', alpha=0.5)
+
+# ax = fig.add_subplot(gs[2])
+# ax.hist(ngas, num_bins, normed=1, facecolor='blue', alpha=0.5)
+
+# fig.text(0.5, 0.04, 'first PC value', ha='center')
+# fig.text(0.02, 0.5, 'number of occurences', va='center', rotation='vertical')
+
+fig = plt.figure(figsize=(6, 18))
+gs = gridspec.GridSpec(5, 1)
 gs.update(wspace=3, hspace=0.5)
-ax1 = plt.subplot(gs[0, :6])
-ax2 = plt.subplot(gs[0, 6:12])
-ax3 = plt.subplot(gs[0, 12:18])
-ax4 = plt.subplot(gs[1, 3:9])
-ax5 = plt.subplot(gs[1, 9:15])
+ax1 = plt.subplot(gs[0])
+ax2 = plt.subplot(gs[1])
+ax3 = plt.subplot(gs[2])
+ax4 = plt.subplot(gs[3])
+ax5 = plt.subplot(gs[4])
 
 for i in range(len(itera)):
 
     if i == 0:
         ax1.hist(itera[i], num_bins, facecolor='blue', alpha=0.5)
-        ax1.set_title('eigenvalues of component 1')
-        ax1.set_xlabel('percentage of largest eigenvalue')
-        ax1.set_ylabel("number of occurences")
+        # ax1.set_title('eigenvalues of component 1')
+        ax1.set_xlabel('percentage of largest eigenvalue', fontsize=16)
+        # ax1.set_ylabel("number of occurences")
         ax1.axvline(x=eigval1, c= 'Black')
+        ax1.axvline(x=conf_int[i][0], linestyle="dashed")
+        ax1.axvline(x=conf_int[i][1], linestyle="dashed")
+        ax1.text(-0.16, 1.1, string.ascii_uppercase[0], transform=ax1.transAxes, 
+            size=16)
 
     elif i == 1:
 
         ax2.hist(itera[i], num_bins, facecolor='blue', alpha=0.5)
-        ax2.set_title('eigenvalues of component 2')
-        ax2.set_xlabel('percentage of largest eigenvalue')
+        # ax2.set_title('eigenvalues of component 2')
+        ax2.set_xlabel('percentage of largest eigenvalue', fontsize=16)
         ax2.axvline(x=eigval2, c= 'Black')
+        ax2.axvline(x=conf_int[i][0], linestyle="dashed")
+        ax2.axvline(x=conf_int[i][1], linestyle="dashed")
+
+        ax2.text(-0.16, 1.1, string.ascii_uppercase[1], transform=ax2.transAxes, 
+            size=16)
 
     elif i == 2: 
 
         ax3.hist(itera[i], num_bins, facecolor='blue', alpha=0.5)
-        ax3.set_title('Between PC1 and eigenvector from component 1')
-        ax3.set_xlabel('angle')
+        # ax3.set_title('Between PC1 and eigenvector from component 1')
+        ax3.set_xlabel('angle', fontsize=16)
         ax3.axvline(x=orig_angle1, c= 'Black')
+        ax3.axvline(x=conf_int[i][0], linestyle="dashed")
+        ax3.axvline(x=conf_int[i][1], linestyle="dashed")
+
+        ax3.text(-0.16, 1.1, string.ascii_uppercase[2], transform=ax3.transAxes, 
+            size=16)
 
     elif i == 3: 
 
         ax4.hist(itera[i], num_bins, facecolor='blue', alpha=0.5)
-        ax4.set_title('Between PC1 and eigenvector from component 2')
-        ax4.set_xlabel('angle')
-        ax4.set_ylabel("number of occurences")
+        # ax4.set_title('Between PC1 and eigenvector from component 2')
+        ax4.set_xlabel('angle', fontsize=16)
+        # ax4.set_ylabel("number of occurences")
         ax4.axvline(x=orig_angle2, c= 'Black')
+        ax4.axvline(x=conf_int[i][0], linestyle="dashed")
+        ax4.axvline(x=conf_int[i][1], linestyle="dashed")
+
+        ax4.text(-0.16, 1.1, string.ascii_uppercase[3], transform=ax4.transAxes, 
+            size=16)
+
 
     elif i == 4:
 
         ax5.hist(itera[i], num_bins, facecolor='blue', alpha=0.5)
-        ax5.set_title('Between eigenvectors of two Gaussians')
-        ax5.set_xlabel('angle')
+        # ax5.set_title('Between eigenvectors of two Gaussians')
+        ax5.set_xlabel('angle', fontsize=16)
         ax5.axvline(x=orig_angle, c= 'Black')
+        ax5.axvline(x=conf_int[i][0], linestyle="dashed")
+        ax5.axvline(x=conf_int[i][1], linestyle="dashed")
 
-plt.savefig(os.path.join('figures', "bootstrap.pdf"))
+        ax5.text(-0.16, 1.1, string.ascii_uppercase[4], transform=ax5.transAxes, 
+            size=16)
+
+fig.text(0.035, 0.5, 'number of occurences', va='center', rotation='vertical', fontsize=16)
+
+plt.savefig(os.path.join('figures', "bootstrap.pdf"), transparent=True)
 plt.close()
 print("Done with bootstrap plots (Supplementary Figure 4)")
 
-########################################################################
+###############################x#########################################
 # Simulated histogram from Markov transition (Supplementary Figure 5, 6)
 ########################################################################
 
@@ -675,6 +729,16 @@ init_PC1 = d_x_out[pos_v_nan_in,0]
 final_PC1 = d_x_out[pos_v_nan_out,0]
 PC1 = d_x_notnan_out[:,0]
 vel_PC1 = d_v_notnan_out[:,0]
+
+fig = plt.figure(figsize=(6,18))
+gs = gridspec.GridSpec(5, 1)
+gs.update(wspace=3, hspace=0.5)
+ax1 = plt.subplot(gs[0])
+ax2 = plt.subplot(gs[1])
+ax3 = plt.subplot(gs[2])
+ax4 = plt.subplot(gs[3])
+ax5 = plt.subplot(gs[4])
+ax_lst = [ax1, ax2, ax3, ax4, ax5]
 
 def cum_transition(PC1,vel_PC1_annual,init_PC1, years_move=100,n_bin=6,n_iter=10 ,flag_barrier=False, graph=True,
 					graph_name='' ,flag_rm_jump=False, transition_prob_input=None,ratio_init_input=None):
@@ -738,7 +802,7 @@ def cum_transition(PC1,vel_PC1_annual,init_PC1, years_move=100,n_bin=6,n_iter=10
     return transition_count_matrix, transition_prob_matrix,ratio_init,dist_transition,dist_cum_transition
         
 
-def nga_specific_iteration_length(years_move, n_bin=10, n_iter=20, flag_barrier=True, flag_rm_jump=False):
+def nga_specific_iteration_length(years_move, n_bin=10, n_iter=20, flag_barrier=True, flag_rm_jump=False, ax_num=None):
     transition_count_matrix_b, transition_prob_matrix_b,ratio_init,_,_ = cum_transition(PC1,vel_PC1,init_PC1, years_move=years_move, n_bin=n_bin,
     																					n_iter=n_iter,flag_barrier=flag_barrier,flag_rm_jump=flag_rm_jump )    
     #transition_count_matrix, transition_prob_matrix,ratio_init = cum_transition(PC1,vel_PC1,init_PC1, years_move=500,n_bin=10,n_iter=15,flag_barrier=False  )    
@@ -777,17 +841,24 @@ def nga_specific_iteration_length(years_move, n_bin=10, n_iter=20, flag_barrier=
         dist_cum_final = np.sum(dist_transition_list[i],axis=0)
         dist_sum_NGA = (dist_sum_NGA +dist_cum_final.flatten() )
 
-    if years_move == 100:
-        plt.bar(center_list, dist_sum_NGA, color='r')
-    else:
-        plt.bar(center_list, dist_sum_NGA, color='g')
+    ax = ax_lst[ax_num]
 
-    plt.savefig(os.path.join('figures', "simulated-histogram-transition-matrix-NGA-specific-length-%iyears.pdf"%(years_move)))
-    plt.close()
+    if years_move == 100:
+        ax.bar(center_list, dist_sum_NGA, color='r')
+        # ax.set_xlabel("First Principal Component")
+        # ax.set_ylabel("Number of simulated data points")
+    else:
+        ax.bar(center_list, dist_sum_NGA, color='g')
+        # ax.set_xlabel("First Principal Component")
+        # ax.set_ylabel("Number of simulated data points")
+
+    # plt.savefig(os.path.join('figures', "simulated-histogram-transition-matrix-NGA-specific-length-%iyears.pdf"%(years_move)), transparent=True)
+    # plt.close()
 
 # Figure 6a
-nga_specific_iteration_length(500)
-
+nga_specific_iteration_length(500, ax_num=0)
+ax1.text(-0.16, 1.1, string.ascii_uppercase[0], transform=ax1.transAxes, 
+            size=16)
 n_bin=10
 years_move=500
 
@@ -819,15 +890,20 @@ for i in range(30):
     dist_sum_NGA_from_unif = (dist_sum_NGA_from_unif +dist_cum_final_from_unif.flatten() )
 
 # Figure 6e
-plt.bar(np.array(center_list), dist_sum_NGA_from_unif, color='y')
-plt.savefig(os.path.join('figures', 
-	"simulated-histogram-starting-from-uniform-dist(iter%i-bins%i-timescale%iyears-barrier%i).pdf"%(n_iter, n_bin,years_move,flag_barrier)))
-plt.close()
+ax5.bar(np.array(center_list), dist_sum_NGA_from_unif, color='y')
+ax5.text(-0.16, 1.1, string.ascii_uppercase[4], transform=ax5.transAxes, 
+            size=16)
 
-plt.bar(center_list[:n_bin-1], dist_sum_NGA_from_unif[:n_bin-1], color='y')
-plt.savefig(os.path.join('figures', 
-	"simulated-histogram-starting-from-uniform-dist-no-last-bin(iter%i-bins%i-timescale%iyears-barrier%i).pdf"%(n_iter, n_bin,years_move,flag_barrier)))
-plt.close()
+# ax5.set_xlabel("First Principal Component")
+
+# plt.savefig(os.path.join('figures', 
+# 	"simulated-histogram-starting-from-uniform-dist(iter%i-bins%i-timescale%iyears-barrier%i).pdf"%(n_iter, n_bin,years_move,flag_barrier)), transparent=True)
+# plt.close()
+
+# plt.bar(center_list[:n_bin-1], dist_sum_NGA_from_unif[:n_bin-1], color='y')
+# plt.savefig(os.path.join('figures', 
+# 	"simulated-histogram-starting-from-uniform-dist-no-last-bin(iter%i-bins%i-timescale%iyears-barrier%i).pdf"%(n_iter, n_bin,years_move,flag_barrier)), transparent=True)
+# plt.close()
 
 #%%
 '''
@@ -884,7 +960,7 @@ def func_obj(p, *args):
 '''
 Simulate transition with modified transition matrix
 '''    
-def sim_trans(transition_prob_matrix,figtitle=None,filename=None, color='g'):
+def sim_trans(transition_prob_matrix,figtitle=None,filename=None, color='g', ax_num=None):
     init_position_list = []
     dist_transition_list = []
     dist_cum_transition_list = []
@@ -903,15 +979,22 @@ def sim_trans(transition_prob_matrix,figtitle=None,filename=None, color='g'):
         dist_transition_list.append(dist_transition)
         dist_cum_transition_list.append(dist_cum_transition)
         
+
     
     dist_sum_NGA = np.zeros(n_bin)
     for i in range(30):
         dist_cum_final = np.sum(dist_transition_list[i],axis=0)
         dist_sum_NGA = (dist_sum_NGA +dist_cum_final.flatten() )
-    plt.bar(center_list, dist_sum_NGA, color=color)
+
+    ax = ax_lst[ax_num]
+    ax.bar(center_list, dist_sum_NGA, color=color)
+    # ax.set_xlabel("First Principal Component")
+    # if ax_num == 3:
+    #     ax.set_ylabel("Number of simulated data points")
+
     # plt.title(figtitle)
-    plt.savefig(os.path.join('figures', filename))
-    plt.close()
+    # plt.savefig(os.path.join('figures', filename), transparent=True)
+    # plt.close()
 
 '''
 Match the mean and/or variance of the transition starting from each bin (2nd to 8th).
@@ -960,7 +1043,9 @@ for i in range(1,8):
     transition_prob_matrix_modified[i,:] = p
 
 # # Figure 6d
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean and variance in velocity',filename='simulated-histogram-fixed-mean-and-var.pdf', color='b')
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean and variance in velocity',filename='simulated-histogram-fixed-mean-and-var.pdf', color='b', ax_num=3)
+ax4.text(-0.16, 1.1, string.ascii_uppercase[3], transform=ax4.transAxes, 
+            size=16)
 
 #Match  var only
 transition_prob_matrix_modified = np.copy(transition_prob_matrix)
@@ -992,7 +1077,9 @@ for i in range(1,8):
     transition_prob_matrix_modified[i,:] = p
 
 # Figure 6c
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed variance in velocity',filename='simulated-histogram-fixed-var.pdf', color='c')
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed variance in velocity',filename='simulated-histogram-fixed-var.pdf', color='c', ax_num=2)
+ax3.text(-0.16, 1.1, string.ascii_uppercase[2], transform=ax3.transAxes, 
+            size=16)
 
 #Match  mean only
 transition_prob_matrix_modified = np.copy(transition_prob_matrix)
@@ -1024,15 +1111,25 @@ for i in range(1,8):
     transition_prob_matrix_modified[i,:] = p
 
 # Figure 6b
-sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean in velocity',filename='simulated-histogram-fixed-mean.pdf', color='m')
-print("Done with simulation histogram (Supplementary Figure 6)")
+sim_trans(transition_prob_matrix_modified,figtitle='Simulated histogram, fixed mean in velocity',filename='simulated-histogram-fixed-mean.pdf', color='m', ax_num=1)
+ax2.text(-0.16, 1.1, string.ascii_uppercase[1], transform=ax2.transAxes, 
+            size=16)
 
-# Figure 5
+print("Done with simulation histogram (Supplementary Figure 6)")
+fig.text(0.5, 0.07, 'First Principal Component Bins', ha='center', fontsize=16)
+fig.text(0.035, 0.5, 'Number of simulated data points', va='center', rotation='vertical', fontsize=16)
+
+plt.savefig(os.path.join('figures', "simulated_histograms.pdf"), transparent=True)
+plt.close()
+
+# # Figure 5
 plt.imshow(transition_prob_matrix, cmap='hot')
 plt.xticks(np.arange(n_bin),np.around(center_list,decimals=1) )
 plt.yticks(np.arange(n_bin),np.around(center_list,decimals=1) )
+plt.xlabel("First Principal Component")
+plt.ylabel("First Principal Component")
 plt.colorbar()
-plt.savefig(os.path.join('figures', "heatmap-of-transition-matrix.pdf"))
+plt.savefig(os.path.join('figures', "heatmap-of-transition-matrix.pdf"), transparent=True)
 plt.close()
 print("Done with heatmap (Supplementary Figure 5)")
 
@@ -1052,24 +1149,31 @@ def simulation_plots(L1, k1, x_start1, L2, k2, x_start2, figure):
 
     f, axes = plt.subplots(2, 2, figsize=(12,12))
     axes[0, 0].plot(x_lin, y1_lin)
-    axes[0, 0].set_title("First CC growth")
+    # axes[0, 0].set_title("First CC growth")
+    axes[0, 0].text(-0.16, 1.1, string.ascii_uppercase[0], transform=axes[0,0].transAxes, 
+             size=16)
 
     y2 = L2/(1.+np.exp(-k2*(x-x_start2 )))
     y2_lin = L2/(1.+np.exp(-k2*(x_lin-x_start2 )))
 
     axes[0, 1].plot(x_lin, y2_lin)
-    axes[0, 1].set_title("Second CC growth")
+    # axes[0, 1].set_title("Second CC growth")
+    axes[0, 1].text(-0.16, 1.1, string.ascii_uppercase[1], transform=axes[0,1].transAxes, 
+             size=16)
 
     Y=.5*y1+.5*y2
     Y_lin=.5*y1_lin+.5*y2_lin
     axes[1,0].plot(x_lin, Y_lin)
-    axes[1,0].set_title("Growth of the average")
+    # axes[1,0].set_title("Growth of the average")
+    axes[1, 0].text(-0.16, 1.1, string.ascii_uppercase[2], transform=axes[1,0   ].transAxes, 
+        size=16)
 
     n, bins, patches = plt.hist(Y, 200,  facecolor='blue', alpha=0.5)
-    plt.title('Histogram of the average of two CC')
+    # plt.title('Histogram of the average of two CC')
     axes[1, 1].hist(Y, 200, facecolor='blue', alpha=0.5)
-    axes[1, 1].set_title('Histogram of the average of two CC')
-
+    # axes[1, 1].set_title('Histogram of the average of two CC')
+    axes[1, 1].text(-0.16, 1.1, string.ascii_uppercase[3], transform=axes[1,1].transAxes, 
+             size=16)
     for ax in axes.flat:    
         ax.set(xlabel='time', ylabel='CC value')
 
@@ -1079,9 +1183,9 @@ def simulation_plots(L1, k1, x_start1, L2, k2, x_start2, figure):
         ax.label_outer()
 
     if figure==10:
-        plt.savefig(os.path.join('figures', 'S1.png'))
+        plt.savefig(os.path.join('figures', 'S1.png'), transparent=True)
     else:
-        plt.savefig(os.path.join('figures', 'S2.png'))
+        plt.savefig(os.path.join('figures', 'S2.png'), transparent=True)
 
     plt.clf()
     plt.close()
@@ -1197,8 +1301,8 @@ both_ngas = list()
 # return polities that lie in both Gaussians for each imputed set
 for i in range(1,21):
     impute = pnas_data1[pnas_data1.irep == i]
-    lower_df = impute.loc[lower].dropna()
-    higher_df = impute.loc[higher].dropna()
+    lower_df = impute.reindex(lower).dropna()
+    higher_df = impute.reindex(higher).dropna()
 
     unique_nga = [j for j in impute.NGA.unique().tolist() if (j in lower_df.NGA.unique().tolist()
                                                          and j in higher_df.NGA.unique().tolist())]
@@ -1215,24 +1319,30 @@ gs = gridspec.GridSpec(3,1)
 fig = plt.figure(figsize=(6, 8))
 ax = fig.add_subplot(gs[0])
 ax.hist(pc_proj, num_bins, normed=1, facecolor='blue', alpha=0.5)
+ax.text(-0.16, 1.1, string.ascii_uppercase[0], transform=ax.transAxes, 
+            size=16 )
 
 ax = fig.add_subplot(gs[1])
 ax.hist(weighted, num_bins, normed=1, facecolor='blue', alpha=0.5)
+ax.text(-0.16, 1.1, string.ascii_uppercase[1], transform=ax.transAxes, 
+            size=16)
 
 ax = fig.add_subplot(gs[2])
 ax.hist(ngas, num_bins, normed=1, facecolor='blue', alpha=0.5)
+ax.text(-0.16, 1.1, string.ascii_uppercase[2], transform=ax.transAxes, 
+            size=16)
 
-fig.text(0.5, 0.04, 'first PC value', ha='center')
-fig.text(0.02, 0.5, 'normalized probability density', va='center', rotation='vertical')
+fig.text(0.5, 0.04, 'first PC value', ha='center', fontsize=16)
+fig.text(0.035, 0.5, 'normalized probability density', va='center', rotation='vertical', fontsize=16)
 
 fig.savefig(os.path.join('figures', 'validation_interpolation.pdf'))
 plt.close()
 
 print("Done with interpolation plots (Supplementary Figure 9)")
 
-#########################################################################################################
+########################################################################################################
 # Create a 5 x 2 plot to show time sequences organized by the ten world regions (Supplementary Figure 10)
-#########################################################################################################
+########################################################################################################
 
 f, axes = plt.subplots(int(len(worldRegions)/2),2, sharex=True, sharey=True,figsize=(12,15))
 axes[0,0].set_xlim([t_min,t_max])
@@ -1251,16 +1361,24 @@ for i,reg in enumerate(worldRegions):
             pc1.append(np.mean(PC_matrix[ind,0]))
         axes[m,n].scatter(times,pc1,s=10)
     s = '{' + regList[0] + '; ' + regList[1] + '; ' + regList[2] + '}'
-    axes[m,n].set_title(s,fontsize=10)
+   # axes[m,n].set_title(s,fontsize=10)
     if m != 4:
         plt.setp(axes[m,n].get_xticklabels(), visible=False)
     else:
         axes[m,n].set_xlabel("Calendar Date [AD]")
     if n == 0:
         axes[m,n].set_ylabel("PC1")
+        axes[m,n].text(-0.1, 1.1, string.ascii_uppercase[m+n], transform=axes[m,n].transAxes, 
+                    size=20)
+    else:
+        axes[m,n].text(-0.1, 1.1, string.ascii_uppercase[m+n+4], transform=axes[m,n].transAxes, 
+                    size=20)
+
+
 
 f.subplots_adjust(hspace=.5)
-plt.savefig(os.path.join('figures', "pc1_vs_time_stacked_by_region.pdf"))
+plt.savefig(os.path.join('figures', "pc1_vs_time_stacked_by_region.pdf"), transparent=True)
+plt.show()
 plt.close()
 print("Done with time stacked region plot (Supplementary Figure 10)")
 
