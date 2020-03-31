@@ -3,7 +3,7 @@
 
 This github repository contains all the codes that were used for analysis in:
 
-Jaeweon Shin, Michael Holton Price, David H Wolpert, Hajime Shimao, Brendan Tracey, Timothy A Kohler. (2019). From Scale to Information and Back: Human Social Evolution in the Holocene
+Jaeweon Shin, Michael Holton Price, David H Wolpert, Hajime Shimao, Brendan Tracey, Timothy A Kohler. (2019). Scale and Information-Processing Thresholds in Holocene Social Evolution
 
 ## Usage
 
